@@ -40,15 +40,15 @@ const logger = new Logger("ChatExporter");
 
 // User-facing messages
 const Messages = {
-    ATTACHMENT_WARNING: "⚠️ Large files or many attachments may take considerable time to download",
-    ATTACHMENT_INFO: "📦 Attachments will be downloaded and packaged in a ZIP file with the HTML export",
-    UNLIMITED_WARNING: "⚠️ Warning: Unlimited exports may take a long time and consume significant memory for large servers",
+    ATTACHMENT_WARNING: "Large files or many attachments may take considerable time to download",
+    ATTACHMENT_INFO: "Attachments will be downloaded and packaged in a ZIP file with the HTML export",
+    UNLIMITED_WARNING: "Warning: Unlimited exports may take a long time and consume significant memory for large servers",
     RATE_LIMIT_ERROR: "⚠️ Rate limited by Discord API. Please wait a moment and try again with a smaller export.",
     RATE_LIMIT_RETRY: (seconds: number) => `Rate limited - waiting ${seconds}s before retry...`,
     FETCHING_MESSAGES: (count: number) => `Fetched ${count} messages from current channel...`,
     DOWNLOADING_ATTACHMENTS: (current: number, total: number, percent: number) =>
         `Downloading attachments: ${current}/${total} (${percent}%)`,
-    USER_FILTER_DISABLED: "User filtering is currently disabled. All users will be included in the export.",
+    USER_FILTER_INFO: "Select users to include or exclude from the export",
     ALL_CHANNELS_NOTICE: "All text channels in the server will be exported when \"Entire Server\" is selected."
 };
 
@@ -184,7 +184,7 @@ function ExportModal({ modalProps, initialChannelId }: { modalProps: ModalProps;
 
     // Get plugin settings - Access through settings.store
     const defaultFormat = settings.store.defaultFormat || "json";
-    const defaultMessageLimit = settings.store.defaultMessageLimit || 1000;
+    const defaultMessageLimit = settings.store.defaultMessageLimit ?? 1000;
     const includeAttachmentsByDefault = settings.store.includeAttachmentsByDefault ?? true;
 
     const [options, setOptions] = useState<ExportOptions>({
@@ -209,6 +209,7 @@ function ExportModal({ modalProps, initialChannelId }: { modalProps: ModalProps;
 
     const [isExporting, setIsExporting] = useState(false);
     const [progress, setProgress] = useState<ExportProgress | null>(null);
+    const [userSearchQuery, setUserSearchQuery] = useState("");
 
     // Get available channels for export (only for guilds)
     const availableChannels = React.useMemo(() => {
@@ -237,13 +238,27 @@ function ExportModal({ modalProps, initialChannelId }: { modalProps: ModalProps;
             const members = GuildMemberStore.getMembers(currentGuild.id);
             return members.map((member: any) => ({
                 label: `${member.nick || member.user.username}#${member.user.discriminator}`,
-                value: member.user.id
+                value: member.user.id,
+                username: member.user.username.toLowerCase(),
+                nick: member.nick?.toLowerCase() || ""
             }));
         } catch (error) {
             logger.error("Error getting guild members:", error);
             return [];
         }
     }, [currentGuild, isDM]);
+
+    // Filter members based on search query
+    const filteredMembers = React.useMemo(() => {
+        if (!userSearchQuery) return guildMembers;
+
+        const query = userSearchQuery.toLowerCase();
+        return guildMembers.filter(member =>
+            member.username.includes(query) ||
+            member.nick.includes(query) ||
+            member.label.toLowerCase().includes(query)
+        );
+    }, [guildMembers, userSearchQuery]);
 
     const updateOption = <K extends keyof ExportOptions>(key: K, value: ExportOptions[K]) => {
         setOptions(prev => ({ ...prev, [key]: value }));
@@ -261,6 +276,19 @@ function ExportModal({ modalProps, initialChannelId }: { modalProps: ModalProps;
             ...prev,
             userFilter: { ...prev.userFilter, [key]: value }
         }));
+    };
+
+    const toggleUserSelection = (userId: string) => {
+        setOptions(prev => {
+            const userIds = prev.userFilter.userIds.includes(userId)
+                ? prev.userFilter.userIds.filter(id => id !== userId)
+                : [...prev.userFilter.userIds, userId];
+
+            return {
+                ...prev,
+                userFilter: { ...prev.userFilter, userIds }
+            };
+        });
     };
 
     const startExport = async () => {
@@ -418,9 +446,54 @@ function ExportModal({ modalProps, initialChannelId }: { modalProps: ModalProps;
                                         isSelected={mode => options.userFilter.mode === mode}
                                         serialize={String}
                                     />
-                                    <Text variant="text-sm/normal" style={{ color: "var(--text-muted)" }}>
-                                        {Messages.USER_FILTER_DISABLED}
-                                    </Text>
+
+                                    {!isDM && guildMembers.length > 0 && (
+                                        <>
+                                            <TextInput
+                                                placeholder="Search users..."
+                                                value={userSearchQuery}
+                                                onChange={setUserSearchQuery}
+                                                style={{ marginTop: "8px", marginBottom: "8px" }}
+                                            />
+
+                                            <div style={{
+                                                maxHeight: "200px",
+                                                overflowY: "auto",
+                                                border: "1px solid var(--background-modifier-accent)",
+                                                borderRadius: "4px",
+                                                padding: "8px"
+                                            }}>
+                                                {filteredMembers.length > 0 ? (
+                                                    filteredMembers.map(member => (
+                                                        <div key={member.value} style={{ marginBottom: "4px" }}>
+                                                            <Checkbox
+                                                                value={options.userFilter.userIds.includes(member.value)}
+                                                                onChange={() => toggleUserSelection(member.value)}
+                                                            >
+                                                                {member.label}
+                                                            </Checkbox>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <Text variant="text-sm/normal" style={{ color: "var(--text-muted)" }}>
+                                                        No users found
+                                                    </Text>
+                                                )}
+                                            </div>
+
+                                            {options.userFilter.userIds.length > 0 && (
+                                                <Text variant="text-sm/normal" style={{ color: "var(--text-normal)", marginTop: "8px" }}>
+                                                    {options.userFilter.userIds.length} user{options.userFilter.userIds.length !== 1 ? "s" : ""} selected
+                                                </Text>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {(isDM || guildMembers.length === 0) && (
+                                        <Text variant="text-sm/normal" style={{ color: "var(--text-muted)" }}>
+                                            {isDM ? "User filtering is not available in DMs" : Messages.USER_FILTER_INFO}
+                                        </Text>
+                                    )}
                                 </div>
                             )}
                         </Card>
@@ -446,13 +519,29 @@ function ExportModal({ modalProps, initialChannelId }: { modalProps: ModalProps;
 
                             <div className="vc-message-limit">
                                 <Forms.FormTitle>Message Limit (0 = unlimited)</Forms.FormTitle>
-                                <TextInput
+                                <input
                                     type="number"
-                                    value={options.messageLimit.toString()}
-                                    onChange={value => updateOption("messageLimit", parseInt(value) || 0)}
+                                    className="vc-text-input"
+                                    value={options.messageLimit}
+                                    onChange={e => {
+                                        const value = parseInt(e.target.value) || 0;
+                                        updateOption("messageLimit", Math.max(0, value));
+                                    }}
+                                    min="0"
+                                    max="50000"
+                                    style={{
+                                        background: "var(--input-background)",
+                                        border: "1px solid var(--input-border)",
+                                        borderRadius: "6px",
+                                        padding: "8px 12px",
+                                        color: "var(--text-normal)",
+                                        fontSize: "14px",
+                                        width: "100%",
+                                        maxWidth: "200px"
+                                    }}
                                 />
                                 {options.messageLimit === 0 && (
-                                    <Text variant="text-sm/normal" style={{ color: "var(--text-warning)", marginTop: "5px" }}>
+                                    <Text variant="text-sm/normal" className="vc-text-warning" style={{ marginTop: "5px" }}>
                                         {Messages.UNLIMITED_WARNING}
                                     </Text>
                                 )}
@@ -466,14 +555,14 @@ function ExportModal({ modalProps, initialChannelId }: { modalProps: ModalProps;
                                     Include Attachments
                                 </Checkbox>
                                 {options.includeAttachments && options.format === "html" && (
-                                    <Text variant="text-sm/normal" style={{ color: "var(--text-muted)", marginLeft: "20px", marginTop: "5px" }}>
-                                        {Messages.ATTACHMENT_INFO}
-                                    </Text>
-                                )}
-                                {options.includeAttachments && options.format === "html" && (
-                                    <Text variant="text-sm/normal" style={{ color: "var(--text-warning)", marginLeft: "20px", marginTop: "5px" }}>
-                                        {Messages.ATTACHMENT_WARNING}
-                                    </Text>
+                                    <>
+                                        <Text variant="text-sm/normal" className="vc-text-muted" style={{ marginLeft: "20px", marginTop: "5px" }}>
+                                            {Messages.ATTACHMENT_INFO}
+                                        </Text>
+                                        <Text variant="text-sm/normal" className="vc-text-warning" style={{ marginLeft: "20px", marginTop: "5px" }}>
+                                            {Messages.ATTACHMENT_WARNING}
+                                        </Text>
+                                    </>
                                 )}
                                 <Checkbox
                                     value={options.includeReactions}
@@ -841,7 +930,20 @@ async function fetchChannelMessages(channelId: string, options: ExportOptions, s
 }
 
 async function processMessage(rawMessage: any, options: ExportOptions): Promise<ExportedMessage | null> {
-    // User filter is currently disabled - include all messages
+    // Apply user filter if enabled
+    if (options.userFilter.enabled && options.userFilter.userIds.length > 0) {
+        const authorId = rawMessage.author.id;
+        const isIncluded = options.userFilter.userIds.includes(authorId);
+
+        // If mode is "include", only include messages from selected users
+        // If mode is "exclude", exclude messages from selected users
+        if (options.userFilter.mode === "include" && !isIncluded) {
+            return null;
+        }
+        if (options.userFilter.mode === "exclude" && isIncluded) {
+            return null;
+        }
+    }
 
     const channel = ChannelStore.getChannel(rawMessage.channel_id);
     const { author } = rawMessage;

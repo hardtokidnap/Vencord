@@ -595,7 +595,7 @@ export const Devs = /* #__PURE__*/ Object.freeze({
     },
     Hardtokidnap: {
         name: "hardtokidnap",
-        id: 0n
+        id: 90646949799153664n
     },
 } satisfies Record<string, Dev>);
 

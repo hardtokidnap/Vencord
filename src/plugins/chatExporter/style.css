@@ -1,5 +1,3 @@
-/* Chat Exporter Plugin Styles */
-
 .vc-chat-exporter-menu-item {
     color: var(--interactive-normal);
 }
@@ -8,42 +6,361 @@
     color: var(--interactive-hover);
 }
 
-/* Export progress indicator */
-.vc-export-progress {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--background-secondary);
-    border: 1px solid var(--background-tertiary);
-    border-radius: 8px;
-    padding: 12px;
-    z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.vc-chat-exporter-modal {
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 0 4px;
 }
 
-.vc-export-progress h3 {
-    margin: 0 0 8px 0;
+.vc-export-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 0;
+}
+
+.vc-export-card {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-accent);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.vc-export-card:hover {
+    border-color: var(--brand-experiment-30);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+}
+
+.vc-export-card h3,
+.vc-export-card .vc-form-title {
+    color: var(--header-primary);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vc-export-card > *:not(:last-child) {
+    margin-bottom: 12px;
+}
+
+.vc-export-card > *:last-child {
+    margin-bottom: 0;
+}
+
+.vc-channel-selector {
+    margin-top: 12px;
+}
+
+.vc-channel-selector h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--header-secondary);
+    margin-bottom: 6px;
+}
+
+.vc-date-range {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.vc-date-input {
+    display: flex;
+    flex-direction: column;
+}
+
+.vc-date-input h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--header-secondary);
+    margin-bottom: 6px;
+}
+
+.vc-user-filter {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vc-export-format {
+    margin-bottom: 0;
+}
+
+.vc-export-format h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--header-secondary);
+    margin-bottom: 6px;
+}
+
+.vc-message-limit {
+    margin-bottom: 0;
+}
+
+.vc-message-limit h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--header-secondary);
+    margin-bottom: 6px;
+}
+
+.vc-message-limit input {
+    width: 100%;
+    max-width: 200px;
+}
+
+.vc-include-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.vc-include-options > div {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.vc-include-options input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.vc-include-options label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-normal);
+    cursor: pointer;
+    flex: 1;
+}
+
+.vc-include-options .vc-text-sm {
+    font-size: 12px;
+    line-height: 1.4;
+    margin-top: 4px;
+    padding-left: 20px;
+}
+
+.vc-export-progress {
+    text-align: center;
+    padding: 32px 20px;
+}
+
+.vc-export-progress h2 {
+    color: var(--header-primary);
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
+}
+
+.vc-progress-info {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+
+.vc-progress-info > div {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.vc-progress-info > div:first-child {
+    color: var(--text-normal);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.vc-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--background-tertiary);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 16px 0;
+}
+
+.vc-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--brand-experiment), var(--brand-experiment-560));
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+.vc-export-card input[type="text"],
+.vc-export-card input[type="number"],
+.vc-export-card input[type="datetime-local"] {
+    background: var(--input-background);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    padding: 8px 12px;
     color: var(--text-normal);
     font-size: 14px;
+    width: 100%;
+    transition: border-color 0.2s ease;
+}
+
+.vc-export-card select {
+    background: var(--input-background);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--text-normal);
+    font-size: 14px;
+    width: 100%;
+    transition: border-color 0.2s ease;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 32px;
+}
+
+.vc-export-card input[type="text"]:focus,
+.vc-export-card input[type="number"]:focus,
+.vc-export-card input[type="datetime-local"]:focus,
+.vc-export-card select:focus {
+    border-color: var(--brand-experiment);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--brand-experiment-15);
+}
+
+.vc-export-card input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--brand-experiment);
+    cursor: pointer;
+}
+
+.vc-text-warning {
+    color: var(--text-warning) !important;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.vc-text-warning::before {
+    content: "⚠️";
+    margin-right: 4px;
+}
+
+.vc-text-muted {
+    color: var(--text-normal) !important;
+    opacity: 0.8;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.vc-export-card[style*="background-secondary-alt"] {
+    background: var(--background-secondary-alt);
+    border: 1px solid var(--brand-experiment-20);
+}
+
+.vc-export-card[style*="background-secondary-alt"] h3 {
+    color: var(--brand-experiment);
+}
+
+.vc-export-card[style*="background-secondary-alt"] > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.vc-export-card[style*="background-secondary-alt"] > div > div {
+    font-size: 14px;
+    color: var(--text-normal);
+}
+
+.vc-export-card[style*="background-secondary-alt"] strong {
+    color: var(--header-primary);
     font-weight: 600;
 }
 
-.vc-export-progress .progress-bar {
-    width: 100%;
-    height: 4px;
-    background: var(--background-tertiary);
-    border-radius: 2px;
-    overflow: hidden;
+.vc-export-success {
+    color: var(--text-positive);
+    background: var(--background-positive);
+    border: 1px solid var(--status-positive);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.vc-export-progress .progress-fill {
-    height: 100%;
-    background: var(--brand-experiment);
-    transition: width 0.3s ease;
+.vc-export-error {
+    color: var(--text-danger);
+    background: var(--background-danger);
+    border: 1px solid var(--status-danger);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.vc-export-progress .progress-text {
-    margin-top: 4px;
-    font-size: 12px;
-    color: var(--text-muted);
+.vc-export-card .vc-text-sm + .vc-text-sm {
+    margin-top: 2px;
+}
+
+.vc-modal-footer {
+    gap: 12px;
+}
+
+@media (width <= 768px) {
+    .vc-date-range {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .vc-export-options {
+        padding: 12px 0;
+        gap: 12px;
+    }
+
+    .vc-export-card {
+        padding: 12px;
+    }
+
+    .vc-export-progress {
+        padding: 24px 16px;
+    }
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.vc-chat-exporter-modal::-webkit-scrollbar {
+    width: 6px;
+}
+
+.vc-chat-exporter-modal::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.vc-chat-exporter-modal::-webkit-scrollbar-thumb {
+    background: var(--background-modifier-accent);
+    border-radius: 3px;
+}
+
+.vc-chat-exporter-modal::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-experiment-30);
 }
