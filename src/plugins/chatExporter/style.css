@@ -1,0 +1,49 @@
+/* Chat Exporter Plugin Styles */
+
+.vc-chat-exporter-menu-item {
+    color: var(--interactive-normal);
+}
+
+.vc-chat-exporter-menu-item:hover {
+    color: var(--interactive-hover);
+}
+
+/* Export progress indicator */
+.vc-export-progress {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-tertiary);
+    border-radius: 8px;
+    padding: 12px;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.vc-export-progress h3 {
+    margin: 0 0 8px 0;
+    color: var(--text-normal);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.vc-export-progress .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--background-tertiary);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.vc-export-progress .progress-fill {
+    height: 100%;
+    background: var(--brand-experiment);
+    transition: width 0.3s ease;
+}
+
+.vc-export-progress .progress-text {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
